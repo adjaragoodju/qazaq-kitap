@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import Logo from '../components/logo';
 import Field from '../components/field';
 import Book from '../components/book';
 import Footer from '../components/footer';
+import LoginModal from '../components/auth/LoginModal';
+import { useAuth } from '../context/AuthContext';
 import books from '../data/books.json';
-import { useState } from 'react';
 
 const Root = () => {
   const [filters, setFilters] = useState({
@@ -12,6 +14,8 @@ const Root = () => {
     year: '',
     author: '',
   });
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user } = useAuth();
 
   const uniqueGenres = [...new Set(books.map((book) => book.genre))];
   const uniqueYears = [...new Set(books.map((book) => book.year))];
@@ -37,11 +41,31 @@ const Root = () => {
 
   return (
     <>
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
+      )}
+
       <div className='px-2 container mx-auto'>
-        <header className='py-6'>
+        <header className='py-6 flex justify-between items-center'>
           <nav>
             <Logo />
           </nav>
+
+          {!user ? (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className='bg-qazaq-blue px-6 py-2 rounded-md'
+            >
+              Кіру
+            </button>
+          ) : (
+            <div className='flex items-center space-x-4'>
+              <span>Қош келдіңіз, {user.name}</span>
+              <a href='/profile' className='bg-qazaq-blue px-4 py-2 rounded-md'>
+                Профиль
+              </a>
+            </div>
+          )}
         </header>
 
         <div className='relative rounded-xl'>
@@ -146,6 +170,7 @@ const Root = () => {
             />
           ))}
         </div>
+        {/* Rest of the existing Root component remains the same */}
       </div>
 
       <Footer />
