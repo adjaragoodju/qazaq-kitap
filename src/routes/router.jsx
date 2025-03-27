@@ -5,7 +5,6 @@ import ErrorPage from './error-page';
 import ProfilePage from './profile';
 import CartPage from './cart';
 
-// Wrap routes with AuthProvider in main.jsx
 const router = createBrowserRouter([
   {
     path: '/',
@@ -23,7 +22,7 @@ const router = createBrowserRouter([
   {
     path: '/cart',
     element: <CartPage />,
-  }
+  },
 ]);
 
 export default router;

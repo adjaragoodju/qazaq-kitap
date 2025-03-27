@@ -3,7 +3,7 @@ import Logo from '../components/logo';
 import Field from '../components/field';
 import Book from '../components/book';
 import Footer from '../components/footer';
-import LoginModal from '../components/auth/LoginModal';
+// import LoginModal from '../components/auth/LoginModal';
 import { useAuth } from '../context/AuthContext';
 import books from '../data/books.json';
 
@@ -41,9 +41,10 @@ const Root = () => {
 
   return (
     <>
-      {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
-      )}
+      {showLoginModal &&
+        'please login'
+        // <LoginModal onClose={() => setShowLoginModal(false)} />
+      }
 
       <div className='px-2 container mx-auto'>
         <header className='py-6 flex justify-between items-center'>
