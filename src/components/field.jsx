@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-const Field = ({ name, label, options }) => {
+const Field = ({ name, label, options, onChange, value }) => {
   const id = useId();
 
   return (
@@ -13,11 +13,15 @@ const Field = ({ name, label, options }) => {
           <select
             id={id}
             name={name}
+            value={value}
+            onChange={onChange}
             className='min-w-[100px] rounded-md px-2 appearance-none'
           >
             <option value=''>-</option>
-            {options.map((o) => (
-              <option>{o}</option>
+            {options.map((o, index) => (
+              <option key={index} value={o}>
+                {o}
+              </option>
             ))}
           </select>
           <svg
@@ -39,6 +43,8 @@ const Field = ({ name, label, options }) => {
         <input
           id={id}
           name={name}
+          value={value}
+          onChange={onChange}
           className='min-w-[100px] border border-[#A4A4A4] rounded-md mt-2 py-3 px-2'
         />
       )}
