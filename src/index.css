@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-qazaq-blue: #4a83f6;
+}
+
+:root {
+  font-family: 'Inter', sans-serif;
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: 'Inter var', sans-serif;
+  }
+}
