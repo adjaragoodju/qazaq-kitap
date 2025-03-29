@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (userData) => {
     setError(null);
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(userData),
         credentials: 'include', // Important for cookies
       });
 
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok) {
         throw new Error(data.message || 'Тіркеу кезінде қате туындады');
       }
-
+      const login = await login(data.user.email, data.user.password);
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       return { success: true };

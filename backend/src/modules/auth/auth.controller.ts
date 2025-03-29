@@ -49,11 +49,11 @@ export class AuthController {
     return this.authService.logout(req, res);
   }
 
-  @Get('test')
+  @Get('me')
   async getMe(@Req() req: any) {
     const userId = req.session.userId;
 
-    const user = await this.usersService.findById(userId);
+    const {password, ...user} = await this.usersService.findById(userId);
     return {
       message: 'User profile fetched successfully',
       user,

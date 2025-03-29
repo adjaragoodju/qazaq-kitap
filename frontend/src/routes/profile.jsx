@@ -6,7 +6,10 @@ import Footer from '../components/footer';
 const ProfilePage = () => {
   const { user, logout } = useAuth();
   const [userOrders, setUserOrders] = useState([]);
-
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
   useEffect(() => {
     // Simulate fetching user orders
     // In a real app, this would be an API call
@@ -43,7 +46,7 @@ const ProfilePage = () => {
           <nav className='flex justify-between items-center'>
             <Logo />
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className='bg-red-600 text-white px-4 py-2 rounded'
             >
               Шығу

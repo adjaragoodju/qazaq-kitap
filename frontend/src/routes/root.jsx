@@ -3,9 +3,8 @@ import Logo from '../components/logo';
 import Field from '../components/field';
 import Book from '../components/book';
 import Footer from '../components/footer';
-import LoginModal from '../components/auth/LoginModal';
-import RegisterModal from '../components/auth/RegisterModal';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Root = () => {
   const [books, setBooks] = useState([]);
@@ -43,11 +42,13 @@ const Root = () => {
     author: '',
   });
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const navigate = useNavigate();
 
   const { user, logout } = useAuth();
-
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
   // Get unique values for filters
   const uniqueGenres = [...new Set(books.map((book) => book.genre))];
   const uniqueYears = [...new Set(books.map((book) => book.year))];
@@ -58,21 +59,6 @@ const Root = () => {
       ...prevFilters,
       [name]: value,
     }));
-  };
-
-  const openLoginModal = () => {
-    setShowRegisterModal(false);
-    setShowLoginModal(true);
-  };
-
-  const openRegisterModal = () => {
-    setShowLoginModal(false);
-    setShowRegisterModal(true);
-  };
-
-  const closeModals = () => {
-    setShowLoginModal(false);
-    setShowRegisterModal(false);
   };
 
   const filteredBooks = books.filter((book) => {
@@ -91,17 +77,6 @@ const Root = () => {
 
   return (
     <>
-      {showLoginModal && (
-        <LoginModal
-          onClose={closeModals}
-          onSwitchToRegister={openRegisterModal}
-        />
-      )}
-
-      {showRegisterModal && (
-        <RegisterModal onClose={closeModals} onSwitchToLogin={openLoginModal} />
-      )}
-
       <div className='px-2 container mx-auto'>
         <header className='py-6 flex justify-between items-center'>
           <nav>
@@ -111,13 +86,13 @@ const Root = () => {
           {!user ? (
             <div className='flex space-x-4'>
               <button
-                onClick={openLoginModal}
+                onClick={() => navigate('/login')}
                 className='bg-qazaq-blue px-6 py-2 rounded-md'
               >
                 Кіру
               </button>
               <button
-                onClick={openRegisterModal}
+                onClick={() => navigate('/register')}
                 className='border border-qazaq-blue text-qazaq-blue px-6 py-2 rounded-md'
               >
                 Тіркелу
@@ -130,7 +105,7 @@ const Root = () => {
                 Профиль
               </a>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className='border border-red-500 text-red-500 px-4 py-2 rounded-md hover:bg-red-500 hover:text-white transition-colors'
               >
                 Шығу

@@ -8,7 +8,7 @@ import { User } from '@/prisma/generated';
 export class UsersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  public async create(dto: CreateUserDto): Promise<Boolean> {
+  public async create(dto: CreateUserDto): Promise<{user: Pick<User, 'username' | 'email'>}> {
     const { email, username, password } = dto;
 
     const isUsernameExists = await this.prismaService.user.findUnique({
@@ -29,7 +29,7 @@ export class UsersService {
       throw new ConflictException('This email is already taken');
     }
 
-    await this.prismaService.user.create({
+   const {username: newUserName, email: newUserEmail} =  await this.prismaService.user.create({
       data: {
         username: username,
         email: email,
@@ -37,12 +37,13 @@ export class UsersService {
       },
     });
 
-    return true;
+    return {user: {username: newUserName, email:newUserEmail}};
   }
 
-  public async findById(id: string): Promise<User | null> {
-    const user = await this.prismaService.user.findUnique({
+  public async findById(id: string): Promise<User> {
+    const user = await this.prismaService.user.findUniqueOrThrow({
       where: { id: id },
+      
     });
     return user;
   }

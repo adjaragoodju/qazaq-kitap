@@ -72,10 +72,10 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
 
-    await this.usersService.create(dto);
+    const user = await this.usersService.create(dto);
 
     return {
-      message: 'Registration successful',
+      user
     };
   }
 }
