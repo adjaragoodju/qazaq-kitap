@@ -3,28 +3,52 @@ import Logo from '../components/logo';
 import Field from '../components/field';
 import Book from '../components/book';
 import Footer from '../components/footer';
-// import LoginModal from '../components/auth/LoginModal';
+import LoginModal from '../components/auth/LoginModal';
+import RegisterModal from '../components/auth/RegisterModal';
 import { useAuth } from '../context/AuthContext';
 
 const Root = () => {
   const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('http://localhost:3000/api/books');
-      const data = await response.json();
-      setBooks(data);
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:3000/api/books');
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        setBooks(data);
+        setError(null);
+      } catch (err) {
+        setError('Кітаптарды жүктеу кезінде қате туындады');
+        console.error('Error fetching books:', err);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchData();
-  }, [books]);
+  }, []);
+
   const [filters, setFilters] = useState({
     name: '',
     genre: '',
     year: '',
     author: '',
   });
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const { user } = useAuth();
 
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  const { user, logout } = useAuth();
+
+  // Get unique values for filters
   const uniqueGenres = [...new Set(books.map((book) => book.genre))];
   const uniqueYears = [...new Set(books.map((book) => book.year))];
 
@@ -36,6 +60,21 @@ const Root = () => {
     }));
   };
 
+  const openLoginModal = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
+  };
+
+  const openRegisterModal = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  const closeModals = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(false);
+  };
+
   const filteredBooks = books.filter((book) => {
     return (
       (filters.name === '' ||
@@ -43,16 +82,25 @@ const Root = () => {
       (filters.genre === '' || book.genre === filters.genre) &&
       (filters.year === '' || book.year === filters.year) &&
       (filters.author === '' ||
-        book.author.toLowerCase().includes(filters.author.toLowerCase()))
+        (book.author.name &&
+          book.author.name
+            .toLowerCase()
+            .includes(filters.author.toLowerCase())))
     );
   });
 
   return (
     <>
-      {
-        showLoginModal && 'please login'
-        // <LoginModal onClose={() => setShowLoginModal(false)} />
-      }
+      {showLoginModal && (
+        <LoginModal
+          onClose={closeModals}
+          onSwitchToRegister={openRegisterModal}
+        />
+      )}
+
+      {showRegisterModal && (
+        <RegisterModal onClose={closeModals} onSwitchToLogin={openLoginModal} />
+      )}
 
       <div className='px-2 container mx-auto'>
         <header className='py-6 flex justify-between items-center'>
@@ -61,22 +109,37 @@ const Root = () => {
           </nav>
 
           {!user ? (
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className='bg-qazaq-blue px-6 py-2 rounded-md'
-            >
-              Кіру
-            </button>
+            <div className='flex space-x-4'>
+              <button
+                onClick={openLoginModal}
+                className='bg-qazaq-blue px-6 py-2 rounded-md'
+              >
+                Кіру
+              </button>
+              <button
+                onClick={openRegisterModal}
+                className='border border-qazaq-blue text-qazaq-blue px-6 py-2 rounded-md'
+              >
+                Тіркелу
+              </button>
+            </div>
           ) : (
             <div className='flex items-center space-x-4'>
               <span>Қош келдіңіз, {user.name}</span>
               <a href='/profile' className='bg-qazaq-blue px-4 py-2 rounded-md'>
                 Профиль
               </a>
+              <button
+                onClick={logout}
+                className='border border-red-500 text-red-500 px-4 py-2 rounded-md hover:bg-red-500 hover:text-white transition-colors'
+              >
+                Шығу
+              </button>
             </div>
           )}
         </header>
 
+        {/* The rest of your component remains the same */}
         <div className='relative rounded-xl'>
           <img
             src='/khandar.jpg'
@@ -160,27 +223,39 @@ const Root = () => {
         </form>
 
         <div className='mt-10'>
-          <h3 className='text-4xl font-bold'>
-            {filteredBooks.length > 0
-              ? 'Танымал кітаптар'
-              : 'Кітаптар табылмады'}
-          </h3>
+          {loading ? (
+            <div className='text-center py-10'>
+              <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-qazaq-blue border-r-transparent'></div>
+              <p className='mt-2'>Кітаптар жүктелуде...</p>
+            </div>
+          ) : error ? (
+            <div className='bg-red-500/20 text-red-500 p-4 rounded-md text-center'>
+              {error}
+            </div>
+          ) : (
+            <>
+              <h3 className='text-4xl font-bold'>
+                {filteredBooks.length > 0
+                  ? 'Танымал кітаптар'
+                  : 'Кітаптар табылмады'}
+              </h3>
+              <div className='px-5 py-5 flex flex-wrap gap-10'>
+                {filteredBooks.map((b) => (
+                  <Book
+                    key={b.id}
+                    title={b.title}
+                    author={b.author.name}
+                    year={b.year}
+                    genre={b.genre}
+                    image={b.image}
+                    bookUrl={b.pdf}
+                    id={b.id}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
-        <div className='px-5 py-5 flex flex-wrap gap-10'>
-          {filteredBooks.map((b) => (
-            <Book
-              key={b.id}
-              title={b.title}
-              author={b.author.name}
-              year={b.year}
-              genre={b.genre}
-              image={b.image}
-              bookUrl={b.pdf}
-              id={b.id}
-            />
-          ))}
-        </div>
-        {/* Rest of the existing Root component remains the same */}
       </div>
 
       <Footer />

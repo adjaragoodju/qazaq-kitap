@@ -1,0 +1,105 @@
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import Modal from '../common/Modal';
+
+const LoginModal = ({ onClose, onSwitchToRegister }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Basic validation
+    if (!email || !password) {
+      setError('Барлық өрістерді толтырыңыз');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        onClose();
+      } else {
+        setError(result.error || 'Кіру қателігі');
+      }
+    } catch (err) {
+      setError('Кіру қателігі туындады');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
+      <div className='bg-[#282837] p-8 rounded-xl w-full max-w-md'>
+        <h2 className='text-3xl font-bold mb-6 text-center'>Кіру</h2>
+
+        {error && (
+          <div className='bg-red-500 text-white p-3 rounded mb-4'>{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className='mb-4'>
+            <label className='block mb-2'>Электрондық пошта</label>
+            <input
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className='w-full p-3 bg-[#1D1D2A] rounded-md'
+              placeholder='Пошта адресіңізді енгізіңіз'
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className='mb-6'>
+            <label className='block mb-2'>Пароль</label>
+            <input
+              type='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className='w-full p-3 bg-[#1D1D2A] rounded-md'
+              placeholder='Парольді енгізіңіз'
+              disabled={isLoading}
+            />
+          </div>
+
+          <button
+            type='submit'
+            className='w-full bg-qazaq-blue p-3.5 rounded-md text-xl font-bold disabled:opacity-50'
+            disabled={isLoading}
+          >
+            {isLoading ? 'Жүктелуде...' : 'Кіру'}
+          </button>
+        </form>
+
+        <div className='mt-4 text-center'>
+          <p className='mb-2'>
+            Аккаунтыңыз жоқ па?{' '}
+            <button
+              onClick={onSwitchToRegister}
+              className='text-qazaq-blue hover:underline'
+              disabled={isLoading}
+            >
+              Тіркелу
+            </button>
+          </p>
+          <button
+            onClick={onClose}
+            className='text-gray-400 hover:text-white'
+            disabled={isLoading}
+          >
+            Болдырмау
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginModal;

@@ -1,86 +1,34 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React from 'react';
 
-const LoginModal = ({ onClose }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const { login } = useAuth();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Basic validation
-    if (!email || !password) {
-      setError('Барлық өрістерді толтырыңыз');
-      return;
-    }
-
-    // Simulate login (replace with actual authentication later)
-    try {
-      // This would typically be an API call
-      const userData = {
-        id: 1,
-        email,
-        name: 'Қолданушы',
-      };
-
-      login(userData);
-      onClose();
-    } catch (err) {
-      setError('Кіру қателігі');
-    }
-  };
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
 
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
       <div className='bg-[#282837] p-8 rounded-xl w-full max-w-md'>
-        <h2 className='text-3xl font-bold mb-6 text-center'>Кіру</h2>
-
-        {error && (
-          <div className='bg-red-500 text-white p-3 rounded mb-4'>{error}</div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className='mb-4'>
-            <label className='block mb-2'>Электрондық пошта</label>
-            <input
-              type='email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className='w-full p-3 bg-[#1D1D2A] rounded-md'
-              placeholder='Пошта адресіңізді енгізіңіз'
-            />
-          </div>
-
-          <div className='mb-6'>
-            <label className='block mb-2'>Пароль</label>
-            <input
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className='w-full p-3 bg-[#1D1D2A] rounded-md'
-              placeholder='Парольді енгізіңіз'
-            />
-          </div>
-
-          <button
-            type='submit'
-            className='w-full bg-qazaq-blue p-3.5 rounded-md text-xl font-bold'
-          >
-            Кіру
-          </button>
-        </form>
-
-        <div className='text-center mt-4'>
+        <div className='flex justify-between items-center mb-6'>
+          <h2 className='text-3xl font-bold'>{title}</h2>
           <button onClick={onClose} className='text-gray-400 hover:text-white'>
-            Болдырмау
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-6 w-6'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
           </button>
         </div>
+        {children}
       </div>
     </div>
   );
 };
 
-export default LoginModal;
+export default Modal;
