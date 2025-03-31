@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: .
+    container_name: flask-app
+    restart: always
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - SECRET_KEY=secret
+      - POSTGRES_URI=postgresql://root:pass@db:5432/qazaq_kitap
+      - REDIS_URI=redis://:pass@redis:6379/0
+      - ALLOWED_ORIGIN=http://localhost:5173
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  db:
+    container_name: postgres
+    image: postgres:17.2
+    restart: always
+    shm_size: 128mb
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=qazaq_kitap
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    container_name: redis
+    image: redis:7.4.1
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --requirepass pass
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
