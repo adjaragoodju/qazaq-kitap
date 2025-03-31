@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated"
 }
 
 datasource db {
@@ -18,25 +17,30 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt() @map("updated_at")
 
-  cart Book[]
+  Favorite Favorite[]
+  Cart     Cart[]
+  Book     Book[]
 
   @@map("users")
 }
 
 model Book {
-  id     String @id @default(uuid())
-  title  String
-  genre  Genre
-  year   Int
-  image  String
-  pdf    String
-  author Author @relation(fields: [authorId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt() @map("updated_at")
+  id        String     @id @default(uuid())
+  title     String
+  genre     Genre      @relation(fields: [genreId], references: [id])
+  year      Int
+  image     String
+  pdf       String
+  author    Author     @relation(fields: [authorId], references: [id])
+  price     Int
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt() @map("updated_at")
   authorId  String
-  User      User?    @relation(fields: [userId], references: [id])
+  User      User?      @relation(fields: [userId], references: [id])
   userId    String?
+  genreId   String
+  Favorite  Favorite[]
+  Cart      Cart[]
 
   @@map("books")
 }
@@ -52,6 +56,39 @@ model Author {
   @@map("authors")
 }
 
-enum Genre {
-  Scifi
+model Genre {
+  id   String @id @default(uuid())
+  name String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+  Book      Book[]
+
+  @@map("genres")
+}
+
+model Favorite {
+  id String @id @default(uuid())
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+  Book      Book     @relation(fields: [bookId], references: [id])
+  bookId    String
+  User      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("favorites")
+}
+
+model Cart {
+  id String @id @default(uuid())
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+  Book      Book     @relation(fields: [bookId], references: [id])
+  bookId    String
+  User      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("cart")
 }

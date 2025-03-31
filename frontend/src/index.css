@@ -1,13 +1,19 @@
-@import 'tailwindcss';
+/* This file contains global CSS styles for the application
+   It imports Tailwind CSS and defines custom theme variables */
 
+@import 'tailwindcss'; /* Import Tailwind CSS framework */
+
+/* Define custom theme variables for the application */
 @theme {
-  --color-qazaq-blue: #4a83f6;
+  --color-qazaq-blue: #4a83f6; /* Define the primary blue color used throughout the app */
 }
 
+/* Set the default font family for the entire application */
 :root {
   font-family: 'Inter', sans-serif;
 }
 
+/* Use variable fonts if browser supports them for better performance and flexibility */
 @supports (font-variation-settings: normal) {
   :root {
     font-family: 'Inter var', sans-serif;

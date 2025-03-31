@@ -2,7 +2,8 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from '@/src/core/prisma/prisma.service';
 import { hash } from 'argon2';
-import { User } from '@/prisma/generated';
+import { User } from '@prisma/client';
+
 
 @Injectable()
 export class UsersService {
@@ -43,7 +44,10 @@ export class UsersService {
   public async findById(id: string): Promise<User> {
     const user = await this.prismaService.user.findUniqueOrThrow({
       where: { id: id },
-      
+      include: {
+        Favorite:{include: {Book: {include: {genre:true, author: true}}}},
+        Cart: {include: {Book: {include: {genre:true, author: true}}}},
+      }
     });
     return user;
   }

@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users/users.service';
 import { Request, Response } from 'express';
-import { ConfigService } from '@nestjs/config';
-import { User } from '@/prisma/generated';
+import { ConfigService } from '@nestjs/config'; 
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './users/dto/create-user.dto';
 import { verify } from 'argon2';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {

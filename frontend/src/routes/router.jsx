@@ -6,6 +6,7 @@ import ProfilePage from './profile';
 import CartPage from './cart';
 import RegisterPage from './auth/register';
 import LoginPage from './auth/login';
+import FavoritesPage from './favorites';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/favorites',
+    element: <FavoritesPage />,
   },
   {
     path: '*',

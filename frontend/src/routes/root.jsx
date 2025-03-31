@@ -5,6 +5,7 @@ import Book from '../components/book';
 import Footer from '../components/footer';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/navbar';
 
 const Root = () => {
   const [books, setBooks] = useState([]);
@@ -50,7 +51,7 @@ const Root = () => {
     navigate('/');
   };
   // Get unique values for filters
-  const uniqueGenres = [...new Set(books.map((book) => book.genre))];
+  const uniqueGenres = [...new Set(books.map((book) => book.genre.name))];
   const uniqueYears = [...new Set(books.map((book) => book.year))];
 
   const handleFilterChange = (e) => {
@@ -65,8 +66,8 @@ const Root = () => {
     return (
       (filters.name === '' ||
         book.title.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (filters.genre === '' || book.genre === filters.genre) &&
-      (filters.year === '' || book.year === filters.year) &&
+      (filters.genre === '' || book.genre.name === filters.genre) &&
+      (filters.year == '' || book.year == filters.year) &&
       (filters.author === '' ||
         (book.author.name &&
           book.author.name
@@ -78,41 +79,7 @@ const Root = () => {
   return (
     <>
       <div className='px-2 container mx-auto'>
-        <header className='py-6 flex justify-between items-center'>
-          <nav>
-            <Logo />
-          </nav>
-
-          {!user ? (
-            <div className='flex space-x-4'>
-              <button
-                onClick={() => navigate('/login')}
-                className='bg-qazaq-blue px-6 py-2 rounded-md'
-              >
-                Кіру
-              </button>
-              <button
-                onClick={() => navigate('/register')}
-                className='border border-qazaq-blue text-qazaq-blue px-6 py-2 rounded-md'
-              >
-                Тіркелу
-              </button>
-            </div>
-          ) : (
-            <div className='flex items-center space-x-4'>
-              <span>Қош келдіңіз, {user.name}</span>
-              <a href='/profile' className='bg-qazaq-blue px-4 py-2 rounded-md'>
-                Профиль
-              </a>
-              <button
-                onClick={handleLogout}
-                className='border border-red-500 text-red-500 px-4 py-2 rounded-md hover:bg-red-500 hover:text-white transition-colors'
-              >
-                Шығу
-              </button>
-            </div>
-          )}
-        </header>
+        <Navbar />
 
         {/* The rest of your component remains the same */}
         <div className='relative rounded-xl'>
@@ -189,12 +156,6 @@ const Root = () => {
           >
             Тазарту
           </button>
-          <button
-            type='submit'
-            className='bg-qazaq-blue px-24 py-5 text-2xl rounded-md cursor-pointer'
-          >
-            Іздеу
-          </button>
         </form>
 
         <div className='mt-10'>
@@ -221,7 +182,7 @@ const Root = () => {
                     title={b.title}
                     author={b.author.name}
                     year={b.year}
-                    genre={b.genre}
+                    genre={b.genre.name}
                     image={b.image}
                     bookUrl={b.pdf}
                     id={b.id}

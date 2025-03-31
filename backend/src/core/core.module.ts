@@ -8,6 +8,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../shared/guards/auth.guard';
 import { BooksModule } from '../modules/books/books.module';
 import { FilesModule } from './files/files.module';
+import { FavoritesModule } from '../modules/favorites/favorites.module';
+import { CartModule } from '../modules/cart/cart.module';
 
 
 @Module({
@@ -18,7 +20,10 @@ import { FilesModule } from './files/files.module';
     UsersModule,
     AuthModule,
     BooksModule,
-    FilesModule
+    FilesModule,
+    FavoritesModule,
+    CartModule
+    
   ],
   controllers: [],
   providers: [

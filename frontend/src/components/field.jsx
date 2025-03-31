@@ -1,14 +1,21 @@
-import { useId } from 'react';
+// This file defines a reusable Field component for form inputs (text inputs or dropdowns)
+// It handles both regular text inputs and select dropdowns based on whether options are provided
 
+import { useId } from 'react'; // Imports useId hook for generating unique IDs
+
+// Field component that accepts props for name, label, options (optional), onChange function, and current value
 const Field = ({ name, label, options, onChange, value }) => {
-  const id = useId();
+  const id = useId(); // Generates a unique ID for associating label with input element
 
   return (
     <div>
+      {/* Label for the form field */}
       <label htmlFor={id} className='block'>
         {label}
       </label>
+      {/* Render different input types based on whether options array is provided */}
       {options ? (
+        // If options provided, render a dropdown/select element
         <div className='flex border border-[#A4A4A4] rounded-md items-center mt-2 py-3'>
           <select
             id={id}
@@ -17,13 +24,16 @@ const Field = ({ name, label, options, onChange, value }) => {
             onChange={onChange}
             className='min-w-[100px] rounded-md px-2 appearance-none'
           >
+            {/* Default empty option */}
             <option value=''>-</option>
+            {/* Map through options array to create option elements */}
             {options.map((o, index) => (
               <option key={index} value={o}>
                 {o}
               </option>
             ))}
           </select>
+          {/* Custom dropdown arrow icon */}
           <svg
             className='size-4'
             xmlns='http://www.w3.org/2000/svg'
@@ -40,6 +50,7 @@ const Field = ({ name, label, options, onChange, value }) => {
           </svg>
         </div>
       ) : (
+        // If no options provided, render a text input field
         <input
           id={id}
           name={name}
@@ -52,4 +63,4 @@ const Field = ({ name, label, options, onChange, value }) => {
   );
 };
 
-export default Field;
+export default Field; // Exports the Field component for use in other files

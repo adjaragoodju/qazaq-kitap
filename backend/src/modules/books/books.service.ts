@@ -2,7 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { Request } from 'express';
 import { PrismaService } from '@/src/core/prisma/prisma.service';
-import { Book } from '@/prisma/generated';
+import { Book } from '@prisma/client';
+
 
 @Injectable()
 export class BooksService {
@@ -12,8 +13,8 @@ export class BooksService {
   
     const books = await this.prismaService.book.findMany({
       include: {
-        author: true
-        
+        author: true,
+        genre: {select: {name: true}}
       }
     })
 
@@ -26,7 +27,8 @@ export class BooksService {
         id: id,
       },
       include: {
-        author: true
+        author: true,
+        genre: {select: {name: true}}
       }
     });
     return book ? book : null;

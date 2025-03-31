@@ -1,21 +1,33 @@
-import Logo from './logo';
+// This file defines the Footer component that appears at the bottom of all pages
+// It contains the app logo, description, and contact information
 
+import Logo from './logo'; // Imports the Logo component
+
+// Footer component with site information and contact details
 const Footer = () => {
   return (
+    // Footer container with dark blue background and top margin
     <footer className='bg-[#122031] mt-20'>
+      {/* Content container with padding */}
       <div className='px-2 container mx-auto py-14'>
+        {/* Horizontal divider */}
         <hr className='border-[#979797]' />
+        {/* Three-column grid layout (single column on mobile) */}
         <div className='mt-5 grid grid-cols-1 md:grid-cols-3 gap-10'>
+          {/* Column 1: Logo */}
           <div>
             <Logo />
           </div>
+          {/* Column 2: Site description in Kazakh */}
           <div className='text-white'>
             QazaqKitap — қазақ әдебиеті кітаптарын онлайн оқуға арналған ыңғайлы
             платформа. Біз сізге классикалық және заманауи қазақ әдебиетін бір
             жерде жинақтап, ыңғайлы оқу мүмкіндігін ұсынамыз. Кітаптарды кез
             келген уақытта ашып, әдеби мұрамен еркін танысыңыз!
           </div>
+          {/* Column 3: Contact information with icons */}
           <div className='text-white'>
+            {/* Address with location icon */}
             <div className='flex items-center gap-2'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -39,6 +51,7 @@ const Footer = () => {
               </svg>
               Проспект Мангилик Ел, С1 • Astana IT University College
             </div>
+            {/* Phone number with phone icon */}
             <div className='flex items-center gap-2 mt-2'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -58,7 +71,9 @@ const Footer = () => {
             </div>
           </div>
         </div>
+        {/* Bottom horizontal divider */}
         <hr className='mt-5 border-[#979797]' />
+        {/* Copyright notice at the bottom */}
         <div className='mt-10 text-sm text-gray-500 text-center'>
           Copyright © 2025 • Алмас
         </div>
@@ -67,4 +82,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default Footer; // Exports the Footer component for use in other files
