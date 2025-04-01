@@ -145,14 +145,14 @@ const CartPage = () => {
   if (orderSuccess) {
     return (
       <>
-        <div className='px-2 container mx-auto'>
+        <div className='px-4 container mx-auto'>
           <Navbar />
 
-          <div className='mt-10 bg-[#282837] p-8 rounded-xl text-center'>
+          <div className='mt-6 sm:mt-10 bg-[#282837] p-6 sm:p-8 rounded-xl text-center'>
             <div className='mb-6'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
-                className='h-16 w-16 text-green-500 mx-auto'
+                className='h-12 w-12 sm:h-16 sm:w-16 text-green-500 mx-auto'
                 fill='none'
                 viewBox='0 0 24 24'
                 stroke='currentColor'
@@ -165,17 +165,17 @@ const CartPage = () => {
                 />
               </svg>
             </div>
-            <h1 className='text-3xl font-bold mb-4'>
+            <h1 className='text-xl sm:text-2xl md:text-3xl font-bold mb-4'>
               Тапсырысыңыз қабылданды!
             </h1>
-            <p className='text-lg mb-6'>
+            <p className='text-base sm:text-lg mb-6'>
               Сатып алғаныңыз үшін рахмет. Тапсырыс мәліметтері профиліңізге
               қосылды.
             </p>
-            <div className='flex justify-center gap-4'>
+            <div className='flex flex-col sm:flex-row justify-center gap-4'>
               <button
                 onClick={() => navigate('/')}
-                className='bg-qazaq-blue px-6 py-2 rounded-md'
+                className='bg-qazaq-blue px-6 py-2 rounded-md mb-2 sm:mb-0'
               >
                 Кітаптарға оралу
               </button>
@@ -195,11 +195,13 @@ const CartPage = () => {
 
   return (
     <>
-      <div className='px-2 container mx-auto'>
+      <div className='px-4 container mx-auto'>
         <Navbar />
 
-        <div className='mt-10'>
-          <h1 className='text-4xl font-bold mb-6'>Сіздің себетіңіз</h1>
+        <div className='mt-6 sm:mt-10'>
+          <h1 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6'>
+            Сіздің себетіңіз
+          </h1>
 
           {loading ? (
             <div className='text-center py-10'>
@@ -220,8 +222,8 @@ const CartPage = () => {
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
               {/* Books grid */}
               <div className='lg:col-span-2'>
-                <div className='bg-[#282837] p-6 rounded-xl'>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='bg-[#282837] p-4 sm:p-6 rounded-xl'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
                     {cartItems.map((book) => (
                       <div key={book.cartId} className='relative'>
                         <Book
@@ -237,7 +239,7 @@ const CartPage = () => {
                         {/* Remove Button */}
                         <button
                           onClick={() => removeFromCart(book.cartId)}
-                          className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors'
+                          className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors z-10'
                         >
                           <svg
                             xmlns='http://www.w3.org/2000/svg'
@@ -259,8 +261,8 @@ const CartPage = () => {
               </div>
 
               {/* Checkout section */}
-              <div className='bg-[#282837] p-6 rounded-xl'>
-                <h2 className='text-2xl font-bold mb-4'>
+              <div className='bg-[#282837] p-4 sm:p-6 rounded-xl'>
+                <h2 className='text-xl sm:text-2xl font-bold mb-4'>
                   Тапсырыс мәліметтері
                 </h2>
 
@@ -277,7 +279,7 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                <div className='flex justify-between items-center text-xl font-bold mb-6'>
+                <div className='flex justify-between items-center text-lg sm:text-xl font-bold mb-6'>
                   <span>Жалпы сома</span>
                   <span className='text-qazaq-blue'>{totalPrice} ₸</span>
                 </div>
@@ -341,17 +343,17 @@ const CartPage = () => {
                           required
                         />
                       </div>
-                      <div className='flex justify-between gap-2 mt-6'>
+                      <div className='flex flex-col sm:flex-row justify-between gap-2 mt-6'>
                         <button
                           type='button'
                           onClick={() => setIsCheckingOut(false)}
-                          className='w-1/2 py-3 bg-gray-700 rounded-md'
+                          className='py-3 bg-gray-700 rounded-md sm:w-1/2 order-2 sm:order-1'
                         >
                           Артқа
                         </button>
                         <button
                           type='submit'
-                          className='w-1/2 py-3 bg-qazaq-blue rounded-md'
+                          className='py-3 bg-qazaq-blue rounded-md sm:w-1/2 order-1 sm:order-2 mb-2 sm:mb-0'
                         >
                           Төлеу
                         </button>

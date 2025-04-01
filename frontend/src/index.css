@@ -19,3 +19,43 @@
     font-family: 'Inter var', sans-serif;
   }
 }
+
+/* Hide scrollbars but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Additional global responsive styles */
+html,
+body {
+  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+}
+
+/* Safe area insets for mobile devices with notches */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Improve tap target sizes on mobile */
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Prevent text size adjustment after orientation changes in iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Logo from '../components/logo';
 import Field from '../components/field';
 import Book from '../components/book';
@@ -12,7 +12,9 @@ const Root = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [featuredBookId, setFeaturedBookId] = useState(null);
+  const [showFilterForm, setShowFilterForm] = useState(false);
 
+  // Use useEffect for data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,39 +66,59 @@ const Root = () => {
   const navigate = useNavigate();
 
   const { user, logout } = useAuth();
-  const handleLogout = () => {
+
+  // Use useCallback for event handlers
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/');
-  };
-  // Get unique values for filters
-  const uniqueGenres = [
-    ...new Set(books.map((book) => book.genre.name)),
-  ].sort();
-  const uniqueYears = [...new Set(books.map((book) => book.year))].sort(
-    (a, b) => a - b
-  );
+  }, [logout, navigate]);
 
-  const handleFilterChange = (e) => {
+  // Memoize expensive calculations
+  const uniqueGenres = useMemo(() => {
+    return [...new Set(books.map((book) => book.genre.name))].sort();
+  }, [books]);
+
+  const uniqueYears = useMemo(() => {
+    return [...new Set(books.map((book) => book.year))].sort((a, b) => a - b);
+  }, [books]);
+
+  const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
     setFilters((prevFilters) => ({
       ...prevFilters,
       [name]: value,
     }));
-  };
+  }, []);
 
-  const filteredBooks = books.filter((book) => {
-    return (
-      (filters.name === '' ||
-        book.title.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (filters.genre === '' || book.genre.name === filters.genre) &&
-      (filters.year === '' || book.year == filters.year) &&
-      (filters.author === '' ||
-        (book.author.name &&
-          book.author.name
-            .toLowerCase()
-            .includes(filters.author.toLowerCase())))
-    );
-  });
+  // Memoize filtered books to avoid recalculation on every render
+  const filteredBooks = useMemo(() => {
+    return books.filter((book) => {
+      return (
+        (filters.name === '' ||
+          book.title.toLowerCase().includes(filters.name.toLowerCase())) &&
+        (filters.genre === '' || book.genre.name === filters.genre) &&
+        (filters.year === '' || book.year == filters.year) &&
+        (filters.author === '' ||
+          (book.author.name &&
+            book.author.name
+              .toLowerCase()
+              .includes(filters.author.toLowerCase())))
+      );
+    });
+  }, [books, filters]);
+
+  const toggleFilterForm = useCallback(() => {
+    setShowFilterForm((prev) => !prev);
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFilters({
+      name: '',
+      genre: '',
+      year: '',
+      author: '',
+    });
+  }, []);
 
   return (
     <>
@@ -107,8 +129,9 @@ const Root = () => {
         <div className='relative rounded-xl'>
           <img
             src='/khandar.jpg'
-            className='w-full h-[568px] object-cover rounded-xl'
+            className='w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[568px] object-cover rounded-xl'
             alt='Main Banner'
+            loading='lazy'
             onError={(e) => {
               console.error('Failed to load banner image');
               e.target.src =
@@ -116,31 +139,53 @@ const Root = () => {
             }}
           />
 
-          <div className='absolute bg-gradient-to-t from-black/80 to-white/0 bottom-0 left-0 w-full px-7 py-10 flex justify-between items-center rounded-xl'>
+          <div className='absolute bg-gradient-to-t from-black/80 to-white/0 bottom-0 left-0 w-full px-4 py-4 sm:px-7 sm:py-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 rounded-xl'>
             <div>
-              <div className='text-2xl font-light'>
+              <div className='text-lg sm:text-xl md:text-2xl font-light'>
                 Кәрібаев Берекет Бақытжанұлы
               </div>
-              <div className='mt-1.5 text-4xl font-bold'>
+              <div className='mt-1 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold'>
                 Қазақ хандығының құрылу тарихы
               </div>
             </div>
 
             <Link
               to={`/book/${featuredBookId}`}
-              className='bg-qazaq-blue/90 p-3.5 text-2xl font-bold rounded-4xl cursor-pointer'
+              className='bg-qazaq-blue/90 px-4 py-2 sm:p-3.5 text-lg sm:text-xl md:text-2xl font-bold rounded-lg sm:rounded-4xl cursor-pointer'
             >
               Қазір Оқыңыз
             </Link>
           </div>
         </div>
 
-        {/* Filter form */}
+        {/* Mobile filter toggle button */}
+        <div className='mt-5 block md:hidden'>
+          <button
+            onClick={toggleFilterForm}
+            className='bg-qazaq-blue text-white px-4 py-2 rounded-lg w-full flex items-center justify-center'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-5 w-5 mr-2'
+              viewBox='0 0 20 20'
+              fill='currentColor'
+            >
+              <path
+                fillRule='evenodd'
+                d='M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z'
+                clipRule='evenodd'
+              />
+            </svg>
+            {showFilterForm ? 'Фильтрді жасыру' : 'Фильтр көрсету'}
+          </button>
+        </div>
+
+        {/* Filter form - Desktop (md:) */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
           }}
-          className='bg-[#282837] p-5 mt-10 rounded-xl flex items-center gap-5'
+          className='hidden md:flex bg-[#282837] p-5 mt-5 rounded-xl items-center gap-5'
         >
           <Field
             name='name'
@@ -171,19 +216,56 @@ const Root = () => {
           <div className='flex-1' />
           <button
             type='button'
-            onClick={() => {
-              setFilters({
-                name: '',
-                genre: '',
-                year: '',
-                author: '',
-              });
-            }}
-            className='bg-gray-600 px-12 py-4 text-xs sm:text-xl rounded-md cursor-pointer'
+            onClick={clearFilters}
+            className='bg-gray-600 px-12 py-5 text-xs sm:text-xl rounded-md cursor-pointer'
           >
             Тазарту
           </button>
         </form>
+
+        {/* Filter form - Mobile (collapsed) */}
+        {showFilterForm && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+            className='md:hidden bg-[#282837] p-5 mt-3 rounded-xl flex flex-col gap-4'
+          >
+            <Field
+              name='name'
+              label='Кітап аты'
+              onChange={handleFilterChange}
+              value={filters.name}
+            />
+            <Field
+              name='genre'
+              label='Жанр'
+              options={uniqueGenres}
+              onChange={handleFilterChange}
+              value={filters.genre}
+            />
+            <Field
+              name='year'
+              label='Жылы'
+              options={uniqueYears}
+              onChange={handleFilterChange}
+              value={filters.year}
+            />
+            <Field
+              name='author'
+              label='Автор'
+              onChange={handleFilterChange}
+              value={filters.author}
+            />
+            <button
+              type='button'
+              onClick={clearFilters}
+              className='bg-gray-600 py-3 text-sm rounded-md cursor-pointer mt-2'
+            >
+              Тазарту
+            </button>
+          </form>
+        )}
 
         {/* Book listing */}
         <div className='mt-10'>
@@ -198,12 +280,12 @@ const Root = () => {
             </div>
           ) : (
             <>
-              <h3 className='text-4xl font-bold'>
+              <h3 className='text-2xl sm:text-3xl md:text-4xl font-bold'>
                 {filteredBooks.length > 0
                   ? 'Танымал кітаптар'
                   : 'Кітаптар табылмады'}
               </h3>
-              <div className='px-5 py-5 flex flex-wrap gap-10'>
+              <div className='px-2 sm:px-5 py-5 flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-10'>
                 {filteredBooks.map((book) => (
                   <Book
                     key={book.id}

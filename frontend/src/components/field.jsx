@@ -1,28 +1,24 @@
-// This file defines a reusable Field component for form inputs (text inputs or dropdowns)
-// It handles both regular text inputs and select dropdowns based on whether options are provided
+import { useId } from 'react';
 
-import { useId } from 'react'; // Imports useId hook for generating unique IDs
-
-// Field component that accepts props for name, label, options (optional), onChange function, and current value
 const Field = ({ name, label, options, onChange, value }) => {
-  const id = useId(); // Generates a unique ID for associating label with input element
+  const id = useId();
 
   return (
-    <div>
+    <div className='w-full'>
       {/* Label for the form field */}
-      <label htmlFor={id} className='block'>
+      <label htmlFor={id} className='block text-sm md:text-base'>
         {label}
       </label>
       {/* Render different input types based on whether options array is provided */}
       {options ? (
         // If options provided, render a dropdown/select element
-        <div className='flex border border-[#A4A4A4] rounded-md items-center mt-2 py-3'>
+        <div className='flex border border-[#A4A4A4] rounded-md items-center mt-2 py-2 md:py-3 relative'>
           <select
             id={id}
             name={name}
             value={value}
             onChange={onChange}
-            className='min-w-[100px] rounded-md px-2 appearance-none'
+            className='w-full appearance-none bg-transparent px-2 py-1 text-sm md:text-base'
           >
             {/* Default empty option */}
             <option value=''>-</option>
@@ -35,7 +31,7 @@ const Field = ({ name, label, options, onChange, value }) => {
           </select>
           {/* Custom dropdown arrow icon */}
           <svg
-            className='size-4'
+            className='size-4 absolute right-2 pointer-events-none'
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
             viewBox='0 0 24 24'
@@ -56,11 +52,11 @@ const Field = ({ name, label, options, onChange, value }) => {
           name={name}
           value={value}
           onChange={onChange}
-          className='min-w-[100px] border border-[#A4A4A4] rounded-md mt-2 py-3 px-2'
+          className='w-full border border-[#A4A4A4] rounded-md mt-2 py-2 md:py-3 px-2 text-sm md:text-base'
         />
       )}
     </div>
   );
 };
 
-export default Field; // Exports the Field component for use in other files
+export default Field;

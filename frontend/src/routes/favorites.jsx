@@ -57,11 +57,13 @@ const FavoritesPage = () => {
 
   return (
     <>
-      <div className='px-2 container mx-auto'>
+      <div className='px-4 container mx-auto'>
         <Navbar />
 
-        <div className='mt-10'>
-          <h1 className='text-4xl font-bold mb-6'>Таңдаулылар</h1>
+        <div className='mt-6 sm:mt-10'>
+          <h1 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6'>
+            Таңдаулылар
+          </h1>
 
           {loading ? (
             <div className='text-center py-10'>
@@ -79,10 +81,10 @@ const FavoritesPage = () => {
               </a>
             </div>
           ) : (
-            <div className='bg-[#282837] p-6 rounded-xl'>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+            <div className='bg-[#282837] p-4 sm:p-6 rounded-xl'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 justify-items-center sm:justify-items-start'>
                 {favorites.map((book) => (
-                  <div key={book.favoriteId} className='relative'>
+                  <div key={book.favoriteId} className='relative max-w-[240px]'>
                     <Book
                       id={book.id}
                       title={book.title}
@@ -93,10 +95,10 @@ const FavoritesPage = () => {
                       bookUrl={book.pdf}
                       price={book.price}
                     />
-                    {/* 🔥 Remove Button */}
+                    {/* Remove Button */}
                     <button
                       onClick={() => removeFromFavorites(book.favoriteId)}
-                      className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors'
+                      className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors z-10'
                     >
                       <svg
                         xmlns='http://www.w3.org/2000/svg'

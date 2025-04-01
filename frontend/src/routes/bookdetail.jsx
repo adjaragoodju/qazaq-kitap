@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export default function BookDetail() {
@@ -12,7 +12,7 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
-  // Updated fetchData function in useEffect
+  // Data fetching with useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,8 +44,8 @@ export default function BookDetail() {
     fetchData();
   }, [id, user]);
 
-  // Updated toggleFavorite function
-  const toggleFavorite = async () => {
+  // Memoize the toggleFavorite function
+  const toggleFavorite = useCallback(async () => {
     if (!user) {
       alert('Таңдаулыларға қосу үшін жүйеге кіріңіз');
       return;
@@ -98,11 +98,16 @@ export default function BookDetail() {
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
-  };
+  }, [id, isFavorite, user, refreshUserData]);
 
-  const addToCart = async () => {
+  // Memoize the addToCart function
+  const addToCart = useCallback(async () => {
     if (!user) {
       alert('Себетке қосу үшін жүйеге кіріңіз');
+      return;
+    }
+
+    if (!book) {
       return;
     }
 
@@ -125,15 +130,20 @@ export default function BookDetail() {
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
-  };
+  }, [id, book, user, refreshUserData]);
 
-  // Get the correct image URL with fallback
-  const getImageUrl = () => {
+  // Memoize the image URL
+  const imageUrl = useMemo(() => {
     if (!book || imageError) {
       return 'http://localhost:3000/api/static/uploads/placeholder.png';
     }
     return `http://localhost:3000/api/static/uploads/${book.image}`;
-  };
+  }, [book, imageError]);
+
+  // Handle image error callback
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
 
   if (loading || !book) {
     return (
@@ -149,18 +159,19 @@ export default function BookDetail() {
 
   return (
     <>
-      <div className='px-2 container mx-auto'>
+      <div className='px-4 container mx-auto'>
         <Navbar />
 
-        <div className='bg-[#282837] rounded-xl p-8 mt-10'>
-          <div className='grid md:grid-cols-2 gap-10'>
+        <div className='bg-[#282837] rounded-xl p-4 sm:p-6 md:p-8 mt-6 sm:mt-10'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10'>
             {/* Book Image - Full height in its container */}
-            <div className='relative h-full'>
+            <div className='relative h-auto md:h-full'>
               <img
-                src={getImageUrl()}
+                src={imageUrl}
                 alt={book.title}
-                className='w-full h-full object-contain rounded-xl shadow-lg'
-                onError={() => setImageError(true)}
+                className='w-full h-[300px] md:h-full object-contain rounded-xl shadow-lg'
+                onError={handleImageError}
+                loading='lazy'
               />
 
               {/* Favorite button */}
@@ -202,25 +213,33 @@ export default function BookDetail() {
 
             {/* Book Details */}
             <div>
-              <h1 className='text-4xl font-bold mb-4'>{book.title}</h1>
+              <h1 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4'>
+                {book.title}
+              </h1>
 
               <div className='bg-[#1D1D2A] p-4 rounded-lg mb-6'>
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                   <div>
                     <p className='text-gray-400 mb-1'>Автор</p>
-                    <p className='text-lg font-medium'>{book.author.name}</p>
+                    <p className='text-base md:text-lg font-medium'>
+                      {book.author.name}
+                    </p>
                   </div>
                   <div>
                     <p className='text-gray-400 mb-1'>Жанр</p>
-                    <p className='text-lg font-medium'>{book.genre.name}</p>
+                    <p className='text-base md:text-lg font-medium'>
+                      {book.genre.name}
+                    </p>
                   </div>
                   <div>
                     <p className='text-gray-400 mb-1'>Жылы</p>
-                    <p className='text-lg font-medium'>{book.year}</p>
+                    <p className='text-base md:text-lg font-medium'>
+                      {book.year}
+                    </p>
                   </div>
                   <div>
                     <p className='text-gray-400 mb-1'>Бағасы</p>
-                    <p className='text-lg font-medium text-qazaq-blue font-bold'>
+                    <p className='text-base md:text-lg font-medium text-qazaq-blue font-bold'>
                       {book.price}
                     </p>
                   </div>
@@ -231,7 +250,7 @@ export default function BookDetail() {
               {book.description && (
                 <div className='bg-[#1D1D2A] p-4 rounded-lg mb-6'>
                   <p className='text-gray-400 mb-2'>Сипаттамасы</p>
-                  <p className='text-base leading-relaxed'>
+                  <p className='text-sm sm:text-base leading-relaxed'>
                     {book.description}
                   </p>
                 </div>
@@ -281,7 +300,10 @@ export default function BookDetail() {
                           clipRule='evenodd'
                         />
                       </svg>
-                      Таңдаулылардан алып тастау
+                      <span className='hidden sm:inline'>
+                        Таңдаулылардан алып тастау
+                      </span>
+                      <span className='sm:hidden'>Алып тастау</span>
                     </>
                   ) : (
                     <>
@@ -299,7 +321,10 @@ export default function BookDetail() {
                           d='M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
                         />
                       </svg>
-                      Таңдаулыларға қосу
+                      <span className='hidden sm:inline'>
+                        Таңдаулыларға қосу
+                      </span>
+                      <span className='sm:hidden'>Таңдаулыларға</span>
                     </>
                   )}
                 </button>
