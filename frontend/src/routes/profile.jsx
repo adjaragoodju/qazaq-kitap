@@ -45,17 +45,16 @@ const ProfilePage = () => {
     setPurchasedBooks(allBooks);
   }, []);
 
-  // Open the book PDF directly
-  const openBook = (bookTitle) => {
-    // Convert book title to PDF filename (matches your file structure)
-    // This assumes your PDFs are named the same way as in your uploads folder
-    const pdfFilename = `${bookTitle.toLowerCase().replace(/\s+/g, '')}.pdf`;
+  // Helper function to get image URL with error handling
+  const getImageUrl = (imageFilename) => {
+    return `http://localhost:3000/api/static/uploads/${imageFilename}`;
+  };
 
-    // Open PDF in new tab
-    window.open(
-      `http://localhost:3000/static/uploads/books/${pdfFilename}`,
-      '_blank'
-    );
+  // Helper function to get PDF URL with error handling
+  const getPdfUrl = (pdfFilename) => {
+    if (!pdfFilename) return null;
+    // Make sure we have a valid filename using the books folder path
+    return `http://localhost:3000/uploads/books/${pdfFilename.trim()}`;
   };
 
   if (!user) {
@@ -180,9 +179,12 @@ const ProfilePage = () => {
                           {order.items.map((book, index) => (
                             <li key={index} className='flex items-center'>
                               <img
-                                src={`http://localhost:3000/static/uploads/${book.image}`}
+                                src={getImageUrl(book.image)}
                                 alt={book.title}
                                 className='w-12 h-16 object-cover rounded mr-3'
+                                onError={(e) => {
+                                  e.target.src = getImageUrl('placeholder.png');
+                                }}
                               />
                               <div>
                                 <p className='font-semibold'>{book.title}</p>
@@ -223,9 +225,12 @@ const ProfilePage = () => {
                       className='bg-[#1D1D2A] p-4 rounded-md flex'
                     >
                       <img
-                        src={`http://localhost:3000/static/uploads/${book.image}`}
+                        src={getImageUrl(book.image)}
                         alt={book.title}
                         className='w-20 h-28 object-cover rounded mr-3'
+                        onError={(e) => {
+                          e.target.src = getImageUrl('placeholder.png');
+                        }}
                       />
                       <div className='flex flex-col justify-between flex-1'>
                         <div>
@@ -238,14 +243,34 @@ const ProfilePage = () => {
                           </p>
                         </div>
                         <div className='mt-2'>
-                          <a
-                            href={`http://localhost:3000/static/uploads/books/${book.bookUrl}`}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='px-4 py-2 bg-qazaq-blue rounded text-sm inline-block text-center w-full'
+                          <button
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              try {
+                                // Try to verify if the PDF exists first
+                                const pdfPath = book.pdf || '';
+
+                                if (!pdfPath) {
+                                  alert('PDF файлы табылмады.');
+                                  return;
+                                }
+
+                                // Use the direct PDF URL with books directory
+                                const pdfUrl = `http://localhost:3000/api/static/uploads/books/${book.pdf}`;
+
+                                // Open in a new window
+                                window.open(pdfUrl, '_blank');
+                              } catch (error) {
+                                console.error('Error opening PDF:', error);
+                                alert(
+                                  'PDF файлы қолжетімді емес. Кейінірек қайталап көріңіз.'
+                                );
+                              }
+                            }}
+                            className='px-4 py-2 bg-qazaq-blue rounded text-sm inline-block text-center w-full text-white'
                           >
                             Оқу
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>

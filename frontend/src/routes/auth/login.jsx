@@ -68,12 +68,12 @@ const LoginPage = () => {
         <form onSubmit={(e) => handleSubmit(e)}>
           {/* Login field */}
           <div className='mb-4'>
-            <label className='block mb-2'>login</label>
+            <label className='block mb-2'>Логин/Электрондық пошта</label>
             <input
               type='text'
               name='login'
               className='w-full p-3 bg-[#1D1D2A] rounded-md'
-              placeholder='Пошта адресіңізді енгізіңіз'
+              placeholder='Логин/Пошта адресіңізді енгізіңіз'
               disabled={isLoading}
             />
           </div>
@@ -103,13 +103,13 @@ const LoginPage = () => {
         {/* Link to registration page */}
         <div className='mt-4 text-center'>
           <p className='mb-2'>
-            Аккаунтыңыз бар ма?{' '}
+            Аккаунтыңыз жоқ ма?{' '}
             <button
               onClick={onSwitchRegister}
               className='text-qazaq-blue hover:underline'
               disabled={isLoading}
             >
-              Кіру
+              Тіркелуіру
             </button>
           </p>
         </div>

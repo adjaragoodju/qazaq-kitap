@@ -10,6 +10,7 @@ export default function BookDetail() {
   const [book, setBook] = useState();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   // Updated fetchData function in useEffect
   useEffect(() => {
@@ -126,6 +127,14 @@ export default function BookDetail() {
     }
   };
 
+  // Get the correct image URL with fallback
+  const getImageUrl = () => {
+    if (!book || imageError) {
+      return 'http://localhost:3000/api/static/uploads/placeholder.png';
+    }
+    return `http://localhost:3000/api/static/uploads/${book.image}`;
+  };
+
   if (loading || !book) {
     return (
       <div className='container mx-auto px-4 py-10'>
@@ -145,12 +154,13 @@ export default function BookDetail() {
 
         <div className='bg-[#282837] rounded-xl p-8 mt-10'>
           <div className='grid md:grid-cols-2 gap-10'>
-            {/* Book Image */}
-            <div className='relative'>
+            {/* Book Image - Full height in its container */}
+            <div className='relative h-full'>
               <img
-                src={`http://localhost:3000/uploads/${book.image}`}
+                src={getImageUrl()}
                 alt={book.title}
-                className='w-full max-h-[500px] object-cover rounded-xl shadow-lg'
+                className='w-full h-full object-contain rounded-xl shadow-lg'
+                onError={() => setImageError(true)}
               />
 
               {/* Favorite button */}
@@ -216,6 +226,16 @@ export default function BookDetail() {
                   </div>
                 </div>
               </div>
+
+              {/* Book Description */}
+              {book.description && (
+                <div className='bg-[#1D1D2A] p-4 rounded-lg mb-6'>
+                  <p className='text-gray-400 mb-2'>Сипаттамасы</p>
+                  <p className='text-base leading-relaxed'>
+                    {book.description}
+                  </p>
+                </div>
+              )}
 
               <div className='mt-6 space-y-3'>
                 <button

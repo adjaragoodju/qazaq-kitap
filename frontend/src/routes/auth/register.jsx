@@ -61,12 +61,12 @@ const RegisterPage = () => {
           </div>
 
           <div className='mb-6'>
-            <label className='block mb-2'>username</label>
+            <label className='block mb-2'>Логин</label>
             <input
               type='text'
               name='username'
               className='w-full p-3 bg-[#1D1D2A] rounded-md'
-              placeholder='Парольді енгізіңіз'
+              placeholder='Логинді енгізіңіз'
               disabled={isLoading}
             />
           </div>

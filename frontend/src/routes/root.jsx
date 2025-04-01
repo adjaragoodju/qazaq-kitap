@@ -4,13 +4,14 @@ import Field from '../components/field';
 import Book from '../components/book';
 import Footer from '../components/footer';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/navbar';
 
 const Root = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [featuredBookId, setFeaturedBookId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,6 +25,23 @@ const Root = () => {
 
         const data = await response.json();
         setBooks(data);
+
+        // Look for the featured book by title or create a special case
+        const featuredBook = data.find(
+          (book) =>
+            book.title === 'Қазақ хандығының құрылу тарихы' &&
+            book.author.name === 'Кәрібаев Берекет Бақытжанұлы'
+        );
+
+        // If the featured book exists in the database, use its ID
+        if (featuredBook) {
+          setFeaturedBookId(featuredBook.id);
+        } else {
+          // If not found, we'll use a fallback ID or special handling
+          // This could be the first book in the database or a special hardcoded ID
+          setFeaturedBookId(data.length > 0 ? data[0].id : '1');
+        }
+
         setError(null);
       } catch (err) {
         setError('Кітаптарды жүктеу кезінде қате туындады');
@@ -51,8 +69,12 @@ const Root = () => {
     navigate('/');
   };
   // Get unique values for filters
-  const uniqueGenres = [...new Set(books.map((book) => book.genre.name))];
-  const uniqueYears = [...new Set(books.map((book) => book.year))];
+  const uniqueGenres = [
+    ...new Set(books.map((book) => book.genre.name)),
+  ].sort();
+  const uniqueYears = [...new Set(books.map((book) => book.year))].sort(
+    (a, b) => a - b
+  );
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -67,7 +89,7 @@ const Root = () => {
       (filters.name === '' ||
         book.title.toLowerCase().includes(filters.name.toLowerCase())) &&
       (filters.genre === '' || book.genre.name === filters.genre) &&
-      (filters.year == '' || book.year == filters.year) &&
+      (filters.year === '' || book.year == filters.year) &&
       (filters.author === '' ||
         (book.author.name &&
           book.author.name
@@ -81,12 +103,17 @@ const Root = () => {
       <div className='px-2 container mx-auto'>
         <Navbar />
 
-        {/* The rest of your component remains the same */}
+        {/* Main banner */}
         <div className='relative rounded-xl'>
           <img
             src='/khandar.jpg'
             className='w-full h-[568px] object-cover rounded-xl'
             alt='Main Banner'
+            onError={(e) => {
+              console.error('Failed to load banner image');
+              e.target.src =
+                'http://localhost:3000/api/static/uploads/placeholder.png';
+            }}
           />
 
           <div className='absolute bg-gradient-to-t from-black/80 to-white/0 bottom-0 left-0 w-full px-7 py-10 flex justify-between items-center rounded-xl'>
@@ -99,16 +126,16 @@ const Root = () => {
               </div>
             </div>
 
-            <a
-              download
-              href='/books/kazaktarih.pdf'
+            <Link
+              to={`/book/${featuredBookId}`}
               className='bg-qazaq-blue/90 p-3.5 text-2xl font-bold rounded-4xl cursor-pointer'
             >
               Қазір Оқыңыз
-            </a>
+            </Link>
           </div>
         </div>
 
+        {/* Filter form */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -152,12 +179,13 @@ const Root = () => {
                 author: '',
               });
             }}
-            className='bg-gray-600 px-12 py-5 text-2xl rounded-md cursor-pointer mr-4'
+            className='bg-gray-600 px-12 py-4 text-xs sm:text-xl rounded-md cursor-pointer'
           >
             Тазарту
           </button>
         </form>
 
+        {/* Book listing */}
         <div className='mt-10'>
           {loading ? (
             <div className='text-center py-10'>
@@ -176,16 +204,17 @@ const Root = () => {
                   : 'Кітаптар табылмады'}
               </h3>
               <div className='px-5 py-5 flex flex-wrap gap-10'>
-                {filteredBooks.map((b) => (
+                {filteredBooks.map((book) => (
                   <Book
-                    key={b.id}
-                    title={b.title}
-                    author={b.author.name}
-                    year={b.year}
-                    genre={b.genre.name}
-                    image={b.image}
-                    bookUrl={b.pdf}
-                    id={b.id}
+                    key={book.id}
+                    id={book.id}
+                    title={book.title}
+                    author={book.author.name}
+                    year={book.year}
+                    genre={book.genre.name}
+                    image={book.image}
+                    bookUrl={book.pdf}
+                    price={book.price}
                   />
                 ))}
               </div>

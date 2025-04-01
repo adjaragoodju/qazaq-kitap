@@ -5,6 +5,13 @@ import { useAuth } from '../context/AuthContext';
 const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
   const { user, refreshUserData } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Helper function to get PDF URL
+  const getPdfUrl = () => {
+    if (!bookUrl) return null;
+    return `http://localhost:3000/uploads/books/${bookUrl}`;
+  };
 
   // Check if book is in favorites on load or when user changes
   useEffect(() => {
@@ -135,18 +142,25 @@ const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
     }
   };
 
+  // Use correct image path and handle errors
+  const getImageUrl = () => {
+    if (imageError) {
+      return 'http://localhost:3000/api/static/uploads/placeholder.png';
+    }
+    return `http://localhost:3000/api/static/uploads/${image}`;
+  };
+
   return (
     <div className='block w-[240px] h-[480px] transition-transform hover:scale-105'>
       <Link to={`/book/${id}`}>
         <div className='relative'>
           <img
             className='rounded-lg w-full h-[320px] object-cover'
-            src={`http://localhost:3000/app/static/uploads/${image}`}
+            src={getImageUrl()}
             alt={title}
             onError={(e) => {
               console.error(`Failed to load image: ${image}`);
-              e.target.src =
-                'http://localhost:3000/app/static/uploads/placeholder.png'; // Fallback image
+              setImageError(true);
             }}
           />
           <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 rounded-b-lg'>

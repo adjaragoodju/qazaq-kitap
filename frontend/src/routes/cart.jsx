@@ -124,6 +124,7 @@ const CartPage = () => {
           title: item.title,
           author: item.author.name,
           image: item.image,
+          pdf: item.pdf,
           price: item.price,
           quantity: 1,
         })),
