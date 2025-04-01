@@ -1,5 +1,5 @@
 # app/routes/cart.py
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from app import db
 from app.models import Cart, Book
@@ -43,7 +43,7 @@ def add_to_cart():
     try:
         db.session.add(new_cart_item)
         db.session.commit()
-        return jsonify(new_cart_item.to_dict()), 201
+        return jsonify(new_cart_item.to_dict(with_book=True)), 201
     
     except Exception as e:
         db.session.rollback()

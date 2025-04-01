@@ -12,12 +12,13 @@ app = create_app(os.getenv('FLASK_CONFIG', 'development'))
 @app.cli.command("seed-db")
 def seed_database():
     """Seed the database with initial data"""
-    from app.routes.books import seed_books
-    with app.test_request_context():
+    with app.app_context():
+        from app.routes.books import seed_books
         result = seed_books()
-    print("Database seeded successfully!")
+        print("Database seeded successfully!")
 
 if __name__ == '__main__':
     # Run the app
     port = int(os.getenv('PORT', 3000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug = os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 't')
+    app.run(host='0.0.0.0', port=port, debug=debug)

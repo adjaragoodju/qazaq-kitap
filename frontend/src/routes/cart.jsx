@@ -3,11 +3,21 @@ import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 import Book from '../components/book';
 import { API_URL, useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage = () => {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    name: '',
+  });
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('User object:', user);
@@ -17,9 +27,9 @@ const CartPage = () => {
       return;
     }
 
-    // Трансформируем структуру данных, чтобы добавить cartId
+    // Transform data structure to include cartId
     const cartBooks = user.Cart.map((cartItem) => ({
-      cartId: cartItem.id, // ID элемента корзины для удаления
+      cartId: cartItem.id, // ID of cart item for removal
       ...cartItem.Book,
     }));
 
@@ -28,29 +38,159 @@ const CartPage = () => {
     console.log('Cart set:', cartBooks);
   }, [user]);
 
-  // 🔥 Функция удаления книги из корзины по ID корзины
+  // Calculate total price
+  const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
+
+  // Function to remove item from cart
   const removeFromCart = async (cartId) => {
     try {
       const response = await fetch(`${API_URL}/cart/${cartId}`, {
         method: 'DELETE',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!response.ok) {
         throw new Error('Failed to remove from cart');
       }
 
-      // 🔥 Обновляем состояние локально
+      // Update local state immediately
       setCartItems((prevCart) =>
         prevCart.filter((book) => book.cartId !== cartId)
       );
+
+      // Refresh user data to update other components
+      await refreshUserData();
     } catch (error) {
       console.error('Error removing book:', error);
     }
   };
+
+  // Function to handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Function to clear entire cart
+  const clearCart = async () => {
+    try {
+      // Delete each item one by one
+      const deletePromises = cartItems.map((item) =>
+        fetch(`${API_URL}/cart/${item.cartId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+      );
+
+      await Promise.all(deletePromises);
+
+      // Update local state
+      setCartItems([]);
+
+      // Refresh user data
+      await refreshUserData();
+
+      return true;
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      return false;
+    }
+  };
+
+  // Function to handle checkout process
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+
+    // Simulate processing payment
+    setLoading(true);
+
+    // Fake API delay
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Simulate successful payment
+    const success = await clearCart();
+
+    if (success) {
+      // Store order details in localStorage
+      const orderHistory = JSON.parse(localStorage.getItem('orders') || '[]');
+      const newOrder = {
+        id: `ORD-${Date.now()}`,
+        date: new Date().toLocaleDateString(),
+        items: cartItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          author: item.author.name,
+          image: item.image,
+          price: item.price,
+          quantity: 1,
+        })),
+        total: totalPrice,
+      };
+
+      orderHistory.push(newOrder);
+      localStorage.setItem('orders', JSON.stringify(orderHistory));
+
+      setOrderSuccess(true);
+      setLoading(false);
+    } else {
+      setLoading(false);
+      alert('Төлем өңдеу кезінде қате пайда болды. Қайталап көріңіз.');
+    }
+  };
+
+  if (orderSuccess) {
+    return (
+      <>
+        <div className='px-2 container mx-auto'>
+          <Navbar />
+
+          <div className='mt-10 bg-[#282837] p-8 rounded-xl text-center'>
+            <div className='mb-6'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-16 w-16 text-green-500 mx-auto'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 13l4 4L19 7'
+                />
+              </svg>
+            </div>
+            <h1 className='text-3xl font-bold mb-4'>
+              Тапсырысыңыз қабылданды!
+            </h1>
+            <p className='text-lg mb-6'>
+              Сатып алғаныңыз үшін рахмет. Тапсырыс мәліметтері профиліңізге
+              қосылды.
+            </p>
+            <div className='flex justify-center gap-4'>
+              <button
+                onClick={() => navigate('/')}
+                className='bg-qazaq-blue px-6 py-2 rounded-md'
+              >
+                Кітаптарға оралу
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className='bg-gray-700 px-6 py-2 rounded-md'
+              >
+                Профильге өту
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -76,40 +216,155 @@ const CartPage = () => {
               </a>
             </div>
           ) : (
-            <div className='bg-[#282837] p-6 rounded-xl'>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-                {cartItems.map((book) => (
-                  <div key={book.cartId} className='relative'>
-                    <Book
-                      id={book.id}
-                      title={book.title}
-                      author={book.author.name}
-                      year={book.year}
-                      genre={book.genre.name}
-                      image={book.image}
-                      bookUrl={book.pdf}
-                      price={book.price}
-                    />
-                    {/* 🔥 Кнопка удаления из корзины */}
-                    <button
-                      onClick={() => removeFromCart(book.cartId)}
-                      className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors'
-                    >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        className='h-5 w-5'
-                        viewBox='0 0 20 20'
-                        fill='currentColor'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
-                          clipRule='evenodd'
+            <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+              {/* Books grid */}
+              <div className='lg:col-span-2'>
+                <div className='bg-[#282837] p-6 rounded-xl'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    {cartItems.map((book) => (
+                      <div key={book.cartId} className='relative'>
+                        <Book
+                          id={book.id}
+                          title={book.title}
+                          author={book.author.name}
+                          year={book.year}
+                          genre={book.genre.name}
+                          image={book.image}
+                          bookUrl={book.pdf}
+                          price={book.price}
                         />
-                      </svg>
-                    </button>
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => removeFromCart(book.cartId)}
+                          className='absolute top-2 right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition-colors'
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-5 w-5'
+                            viewBox='0 0 20 20'
+                            fill='currentColor'
+                          >
+                            <path
+                              fillRule='evenodd'
+                              d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z'
+                              clipRule='evenodd'
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Checkout section */}
+              <div className='bg-[#282837] p-6 rounded-xl'>
+                <h2 className='text-2xl font-bold mb-4'>
+                  Тапсырыс мәліметтері
+                </h2>
+
+                <div className='border-t border-b border-gray-700 py-4 my-4'>
+                  <div className='flex justify-between items-center mb-2'>
+                    <span className='text-gray-400'>
+                      Кітаптар (жалпы {cartItems.length})
+                    </span>
+                    <span>{totalPrice} ₸</span>
+                  </div>
+                  <div className='flex justify-between items-center mb-2'>
+                    <span className='text-gray-400'>Жеткізу</span>
+                    <span>Тегін</span>
+                  </div>
+                </div>
+
+                <div className='flex justify-between items-center text-xl font-bold mb-6'>
+                  <span>Жалпы сома</span>
+                  <span className='text-qazaq-blue'>{totalPrice} ₸</span>
+                </div>
+
+                {isCheckingOut ? (
+                  <form onSubmit={handleCheckout}>
+                    <div className='space-y-4'>
+                      <div>
+                        <label className='block mb-1 text-sm'>
+                          Карта нөмірі
+                        </label>
+                        <input
+                          type='text'
+                          placeholder='1234 5678 9012 3456'
+                          name='cardNumber'
+                          value={paymentDetails.cardNumber}
+                          onChange={handleInputChange}
+                          className='w-full p-2 bg-[#1D1D2A] rounded'
+                          required
+                        />
+                      </div>
+                      <div className='grid grid-cols-2 gap-4'>
+                        <div>
+                          <label className='block mb-1 text-sm'>
+                            Жарамдылық мерзімі
+                          </label>
+                          <input
+                            type='text'
+                            placeholder='MM/YY'
+                            name='expiryDate'
+                            value={paymentDetails.expiryDate}
+                            onChange={handleInputChange}
+                            className='w-full p-2 bg-[#1D1D2A] rounded'
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className='block mb-1 text-sm'>CVV</label>
+                          <input
+                            type='text'
+                            placeholder='123'
+                            name='cvv'
+                            value={paymentDetails.cvv}
+                            onChange={handleInputChange}
+                            className='w-full p-2 bg-[#1D1D2A] rounded'
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className='block mb-1 text-sm'>
+                          Карта иесінің аты-жөні
+                        </label>
+                        <input
+                          type='text'
+                          placeholder='JOHN DOE'
+                          name='name'
+                          value={paymentDetails.name}
+                          onChange={handleInputChange}
+                          className='w-full p-2 bg-[#1D1D2A] rounded'
+                          required
+                        />
+                      </div>
+                      <div className='flex justify-between gap-2 mt-6'>
+                        <button
+                          type='button'
+                          onClick={() => setIsCheckingOut(false)}
+                          className='w-1/2 py-3 bg-gray-700 rounded-md'
+                        >
+                          Артқа
+                        </button>
+                        <button
+                          type='submit'
+                          className='w-1/2 py-3 bg-qazaq-blue rounded-md'
+                        >
+                          Төлеу
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                ) : (
+                  <button
+                    onClick={() => setIsCheckingOut(true)}
+                    className='w-full py-3 bg-qazaq-blue rounded-md font-bold'
+                  >
+                    Тапсырыс беру
+                  </button>
+                )}
               </div>
             </div>
           )}

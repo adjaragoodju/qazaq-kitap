@@ -5,7 +5,7 @@ import Book from '../components/book';
 import { API_URL, useAuth } from '../context/AuthContext';
 
 const FavoritesPage = () => {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,7 @@ const FavoritesPage = () => {
     console.log('Favorites set:', favoriteBooks);
   }, [user]);
 
-  // 🔥 Function to remove a book from favorites by Favorite ID
+  // Function to remove a book from favorites by Favorite ID
   const removeFromFavorites = async (favoriteId) => {
     try {
       const response = await fetch(`${API_URL}/favorites/${favoriteId}`, {
@@ -43,10 +43,13 @@ const FavoritesPage = () => {
         throw new Error('Failed to remove from favorites');
       }
 
-      // 🔥 Update local state to reflect changes
+      // Update local state to reflect changes
       setFavorites((prevFavorites) =>
         prevFavorites.filter((book) => book.favoriteId !== favoriteId)
       );
+
+      // Refresh user data to update other components
+      await refreshUserData();
     } catch (error) {
       console.error('Error removing book:', error);
     }

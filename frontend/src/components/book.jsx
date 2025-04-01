@@ -3,19 +3,30 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Check if book is in favorites on load
+  // Check if book is in favorites on load or when user changes
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (user) {
         try {
-          const response = await fetch(
-            `http://localhost:3000/api/users/${user.id}/favorites`
+          // Get the user data with favorites
+          const response = await fetch(`http://localhost:3000/api/auth/me`, {
+            credentials: 'include',
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const userData = await response.json();
+
+          // Check if the current book is in favorites
+          const favorites = userData.user.Favorite || [];
+          const isBookFavorite = favorites.some(
+            (fav) => fav.Book && fav.Book.id === id
           );
-          const favorites = await response.json();
-          const isBookFavorite = favorites.some((fav) => fav.id === id);
           setIsFavorite(isBookFavorite);
         } catch (error) {
           console.error('Error checking favorite status:', error);
@@ -36,21 +47,57 @@ const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
     }
 
     try {
-      const method = isFavorite ? 'DELETE' : 'POST';
-      const response = await fetch(
-        `http://localhost:3000/api/users/${user.id}/favorites`,
-        {
-          method,
+      if (isFavorite) {
+        // Find the favorite ID from user data
+        const response = await fetch(`http://localhost:3000/api/auth/me`, {
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const userData = await response.json();
+        const favorites = userData.user.Favorite || [];
+        const favorite = favorites.find(
+          (fav) => fav.Book && fav.Book.id === id
+        );
+
+        if (favorite) {
+          // Delete the favorite using its ID
+          const deleteResponse = await fetch(
+            `http://localhost:3000/api/favorites/${favorite.id}`,
+            {
+              method: 'DELETE',
+              credentials: 'include',
+            }
+          );
+
+          if (!deleteResponse.ok) {
+            throw new Error(`HTTP error! Status: ${deleteResponse.status}`);
+          }
+        }
+      } else {
+        // Add to favorites
+        const addResponse = await fetch(`http://localhost:3000/api/favorites`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ bookId: id }),
-        }
-      );
+          credentials: 'include',
+        });
 
-      if (response.ok) {
-        setIsFavorite(!isFavorite);
+        if (!addResponse.ok) {
+          throw new Error(`HTTP error! Status: ${addResponse.status}`);
+        }
       }
+
+      // Toggle the favorite state locally
+      setIsFavorite(!isFavorite);
+
+      // Refresh user data after toggling favorite
+      await refreshUserData();
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
@@ -66,20 +113,23 @@ const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/users/${user.id}/cart`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ bookId: id, quantity: 1 }),
-        }
-      );
+      const response = await fetch(`http://localhost:3000/api/cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bookId: id }),
+        credentials: 'include',
+      });
 
-      if (response.ok) {
-        alert(`Кітап себетке қосылды: ${title}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      alert(`Кітап себетке қосылды: ${title}`);
+
+      // Refresh user data after adding to cart
+      await refreshUserData();
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
@@ -91,8 +141,13 @@ const Book = ({ id, title, author, year, genre, image, bookUrl, price }) => {
         <div className='relative'>
           <img
             className='rounded-lg w-full h-[320px] object-cover'
-            src={`http://localhost:3000/uploads/${image}`}
+            src={`http://localhost:3000/app/static/uploads/${image}`}
             alt={title}
+            onError={(e) => {
+              console.error(`Failed to load image: ${image}`);
+              e.target.src =
+                'http://localhost:3000/app/static/uploads/placeholder.png'; // Fallback image
+            }}
           />
           <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 rounded-b-lg'>
             <div className='text-white text-sm font-light'>{genre}</div>

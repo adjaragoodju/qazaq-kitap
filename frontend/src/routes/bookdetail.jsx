@@ -6,11 +6,12 @@ import { useAuth } from '../context/AuthContext';
 
 export default function BookDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [book, setBook] = useState();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Updated fetchData function in useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -22,12 +23,13 @@ export default function BookDetail() {
 
         // Check if book is in favorites
         if (user) {
-          const favResponse = await fetch(
-            `http://localhost:3000/api/users/${user.id}/favorites`
-          );
-          const favorites = await favResponse.json();
+          const favResponse = await fetch(`http://localhost:3000/api/auth/me`, {
+            credentials: 'include',
+          });
+          const userData = await favResponse.json();
+          const favorites = userData.user.Favorite || [];
           const isBookFavorite = favorites.some(
-            (fav) => fav.id === parseInt(id)
+            (fav) => fav.Book && fav.Book.id === id
           );
           setIsFavorite(isBookFavorite);
         }
@@ -41,6 +43,7 @@ export default function BookDetail() {
     fetchData();
   }, [id, user]);
 
+  // Updated toggleFavorite function
   const toggleFavorite = async () => {
     if (!user) {
       alert('Таңдаулыларға қосу үшін жүйеге кіріңіз');
@@ -48,26 +51,48 @@ export default function BookDetail() {
     }
 
     try {
-      const method = isFavorite ? 'DELETE' : 'POST';
-      // Match the endpoint format used in favorites.jsx
-      const response = await fetch(
-        `http://localhost:3000/api/favorites/${
-          isFavorite
-            ? user.Favorite.find((fav) => fav.Book.id === parseInt(id))?.id
-            : ''
-        }`,
-        {
-          method,
+      if (isFavorite) {
+        // Find the favorite ID
+        const meResponse = await fetch(`http://localhost:3000/api/auth/me`, {
+          credentials: 'include',
+        });
+        const userData = await meResponse.json();
+        const favorite = userData.user.Favorite.find(
+          (fav) => fav.Book.id === id
+        );
+
+        if (favorite) {
+          // Delete request with the favorite ID
+          const response = await fetch(
+            `http://localhost:3000/api/favorites/${favorite.id}`,
+            {
+              method: 'DELETE',
+              credentials: 'include',
+            }
+          );
+
+          if (response.ok) {
+            setIsFavorite(false);
+            // Refresh user data
+            await refreshUserData();
+          }
+        }
+      } else {
+        // Add to favorites
+        const response = await fetch(`http://localhost:3000/api/favorites`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ bookId: id }),
           credentials: 'include',
-        }
-      );
+        });
 
-      if (response.ok) {
-        setIsFavorite(!isFavorite);
+        if (response.ok) {
+          setIsFavorite(true);
+          // Refresh user data
+          await refreshUserData();
+        }
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -87,12 +112,14 @@ export default function BookDetail() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ bookId: id, quantity: 1 }),
+        body: JSON.stringify({ bookId: id }),
         credentials: 'include',
       });
 
       if (response.ok) {
         alert(`Кітап себетке қосылды: ${book.title}`);
+        // Refresh user data
+        await refreshUserData();
       }
     } catch (error) {
       console.error('Error adding to cart:', error);

@@ -43,6 +43,7 @@ def register():
         return jsonify({
             "message": "User registered successfully",
             "user": {
+                "id": str(new_user.id),
                 "username": new_user.username,
                 "email": new_user.email
             }
@@ -79,26 +80,16 @@ def login():
     # Login user and create session
     login_user(user)
     session.permanent = True
-    session['userId'] = str(user.id)
-    session['createdAt'] = user.created_at.isoformat()
-    
-    # Generate a session ID
-    session_id = str(uuid.uuid4())
+    session['user_id'] = str(user.id)
     
     return jsonify({
         "message": "Login successful",
-        "rest": {
-            "id": str(user.id),
-            "email": user.email,
-            "username": user.username,
-            "createdAt": user.created_at.isoformat(),
-            "updatedAt": user.updated_at.isoformat()
-        },
-        "sessionId": session_id
+        "user": user.to_dict(with_relations=True)
     }), 200
 
 
 @auth_bp.route('/logout', methods=['POST'])
+@login_required
 def logout():
     logout_user()
     

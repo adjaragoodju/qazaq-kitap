@@ -22,6 +22,25 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Function to refresh user data
+  const refreshUserData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/auth/me`, {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data.user;
+      }
+    } catch (err) {
+      console.error('Error refreshing user data:', err);
+    }
+    return null;
+  };
+
   // Login function that authenticates user with server
   const login = async (userData) => {
     setError(null); // Clear any previous errors
@@ -148,7 +167,16 @@ export const AuthProvider = ({ children }) => {
   // Provide auth context values to all child components
   return (
     <AuthContext.Provider
-      value={{ user, login, register, logout, checkAuth, loading, error }}
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        checkAuth,
+        refreshUserData,
+        loading,
+        error,
+      }}
     >
       {children}
     </AuthContext.Provider>

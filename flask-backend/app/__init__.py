@@ -42,12 +42,22 @@ def create_app(config_name=None):
     
     # Get Redis URI from environment or use default with service name
     redis_uri = os.environ.get('REDIS_URI', 'redis://:pass@redis:6379/0')
-    app.config['SESSION_REDIS'] = redis.from_url(redis_uri)
+    try:
+        app.config['SESSION_REDIS'] = redis.from_url(redis_uri)
+        # Test the Redis connection
+        app.config['SESSION_REDIS'].ping()
+        print("Redis connection successful")
+    except redis.exceptions.ConnectionError as e:
+        print(f"WARNING: Could not connect to Redis: {e}")
+        # Fallback to filesystem session if Redis is not available
+        app.config['SESSION_TYPE'] = 'filesystem'
+        print("Using filesystem sessions instead")
     
     sess.init_app(app)
     
     # Configure static folder for uploads
-    os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
+    uploads_path = os.path.join(app.root_path, 'static', 'uploads')
+    os.makedirs(uploads_path, exist_ok=True)
     
     # Register blueprints
     with app.app_context():
